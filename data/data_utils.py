@@ -1,7 +1,7 @@
 from torch.utils.data import DataLoader
 from pathlib import Path
 
-from dataset import UrlDataset
+from data.dataset import UrlDataset
 import torch
 
 def load_url_dataset(splits_directory: str, batch_size, train_ratio: float = 0.9, num_workers:int = 2, test: bool = False):
