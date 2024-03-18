@@ -1,6 +1,7 @@
 import argparse
-from data.dataset import load_url_dataset
-from torch.utils.data import DataLoader
+import torch
+
+from data.data_utils import load_url_dataset
 
 def main(args):
     num_workers = args.num_workers
