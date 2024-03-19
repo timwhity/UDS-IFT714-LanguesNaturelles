@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 
 class BaseTrainer(ABC):
     def __init__(self, model, tokenizer, loss_fn, optimizer, scheduler, trainloader, validloader, testloader, classes, device) -> None:
+        self.device = device
         self.model = model
         self.tokenizer = tokenizer
         self.loss_fn = loss_fn
@@ -13,7 +14,6 @@ class BaseTrainer(ABC):
         self.testloader = testloader
 
         self.classes = classes
-        self.device = device
 
         self.history = {
             "train": {

@@ -1,6 +1,6 @@
 import torch
 from tqdm import tqdm
-
+import string
 from .base_trainer import BaseTrainer
 
 class RobertaTrainer(BaseTrainer):
@@ -24,12 +24,12 @@ class RobertaTrainer(BaseTrainer):
                                     return_attention_mask=True,
                                     add_special_tokens=True)
             inputs_ids = torch.tensor(tokenized["input_ids"], dtype=torch.long, device=self.device)
-            attention_masks = torch.tensor(tokenized["attention_mask"], dtype=torch.long)
-            targets = targets.to(self.device)
+            attention_mask = torch.tensor(tokenized["attention_mask"], dtype=torch.long, device=self.device)
+            targets = targets.float().to(self.device)
 
             self.optimizer.zero_grad()
 
-            outputs = self.model(inputs_ids, attention_masks=attention_masks)
+            outputs = self.model(inputs_ids, attention_mask=attention_mask).squeeze(1)
             loss = self.loss_fn(outputs, targets)
 
             loss.backward()
@@ -57,6 +57,8 @@ class RobertaTrainer(BaseTrainer):
 
         self.model.eval()
 
+        pbar = tqdm(range(len(dataloader)), desc=hist_key)
+
         with torch.no_grad():
             for inputs, targets in dataloader:
                 tokenized = self.tokenizer(inputs,
@@ -66,21 +68,21 @@ class RobertaTrainer(BaseTrainer):
                                         return_attention_mask=True,
                                         add_special_tokens=True)
                 inputs_ids = torch.tensor(tokenized["input_ids"], dtype=torch.long, device=self.device)
-                attention_masks = torch.tensor(tokenized["attention_mask"], dtype=torch.long)
+                attention_mask = torch.tensor(tokenized["attention_mask"], dtype=torch.long, device=self.device)
                 targets = targets.to(self.device)
 
+                outputs = self.model(inputs_ids, attention_mask=attention_mask).squeeze(1)
+                preds = (outputs > 0.5).long()
+                loss = self.loss_fn(outputs, targets.float())
 
-                outputs = self.model(inputs_ids, attention_masks=attention_masks)
-                loss = self.loss_fn(outputs, targets)
-
+                pbar.update()
                 total_loss += loss.item()
-                total_correct += (outputs == targets).sum().item()
+                total_correct += (preds == targets).sum().item()
         
         self.history[hist_key]["loss"].append(total_loss / len(self.validloader))
         self.history[hist_key]["accuracy"].append(total_correct / len(self.validloader.dataset))
 
         return self.history[hist_key]
-
     
     def test(self):
         return self.validate(test=True)

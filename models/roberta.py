@@ -1,4 +1,5 @@
 import torch.nn as nn
+from torch.nn.modules.module import T
 from transformers import RobertaModel
 
 class RobertaUrl(nn.Module):
@@ -15,3 +16,10 @@ class RobertaUrl(nn.Module):
         logit = self.fc(pooler) # TODO: Add attention head or concat the last hidden states?
         prob_malicious = self.sigmoid(logit)
         return prob_malicious
+
+    # def _apply(self, fn):
+    #     super(RobertaUrl, self)._apply(fn)
+    #     self.roberta_model = fn(self.roberta_model)
+    #     self.fc = fn(self.fc)
+    #     self.sigmoid = fn(self.sigmoid)
+    #     return self

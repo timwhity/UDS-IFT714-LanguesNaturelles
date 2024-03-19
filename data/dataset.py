@@ -17,8 +17,6 @@ class UrlDataset(Dataset):
             idx = idx.tolist()
 
         url = self.df.iloc[idx, 0]
-        print(url)
-        print("type of url", type(url))
         result = self.df.iloc[idx, 2]
 
         if self.transform:
