@@ -10,6 +10,8 @@ def preprocess_data(data: pd.DataFrame) -> pd.DataFrame:
     print("Done.")
     return data
 
+# MASSIVE TODO: KEEP THE PROPORTIONS OF CLASSES INTO EACH TRAIN/TEST SPLIT (DATASET ISN'T BALANCED)
+
 def main(args):
     dataset_file = args.data
     test_ratio = args.test_ratio
