@@ -54,6 +54,7 @@ class RobertaTrainer(BaseTrainer):
 
         total_loss = 0.0
         total_correct = 0
+        count = 0
 
         self.model.eval()
 
@@ -78,9 +79,12 @@ class RobertaTrainer(BaseTrainer):
                 pbar.update()
                 total_loss += loss.item()
                 total_correct += (preds == targets).sum().item()
+                count += len(targets)
         
-        self.history[hist_key]["loss"].append(total_loss / len(self.validloader))
-        self.history[hist_key]["accuracy"].append(total_correct / len(self.validloader.dataset))
+        assert count == len(dataloader.dataset)
+
+        self.history[hist_key]["loss"].append(total_loss / len(dataloader.dataset))
+        self.history[hist_key]["accuracy"].append(total_correct / len(dataloader.dataset))
 
         return self.history[hist_key]
     

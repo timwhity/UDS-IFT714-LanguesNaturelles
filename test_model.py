@@ -14,9 +14,9 @@ batch_size = 16
 num_epochs = 1
 splits_directory = "data/splits"
 
-(trainloader, validloader, testloader), classes = load_url_dataset(splits_directory, batch_size, num_workers=num_workers)
+(_, _, testloader), classes = load_url_dataset(splits_directory, batch_size, num_workers=num_workers, test=True)
 
-nb_training_steps = len(trainloader) * num_epochs
+nb_training_steps = len(testloader) * num_epochs
 max_seq_length = 512
 device = ptu.get_device()
 
@@ -27,30 +27,19 @@ loss_fn = torch.nn.BCELoss()
 optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)
 scheduler = transformers.get_scheduler("linear", optimizer, num_warmup_steps=0, num_training_steps=nb_training_steps)
 
+model.load_state_dict(torch.load("models/trained/roberta_url.pth"))
+
 trainer = RobertaTrainer(model,
                          tokenizer,
                          loss_fn,
                          optimizer,
                          scheduler,
-                         trainloader,
-                         validloader,
+                         None,
+                         None,
                          testloader,
                          classes,
                          device=device,
                          max_seq_length=max_seq_length)
-
-
-for epoch in range(num_epochs):
-    epoch_metrics = trainer.train()
-
-    print(epoch_metrics)
-
-    # Save epoch metrics to JSON file
-    with open(f"models/trained/epoch_{epoch}_metrics.json", "w") as f:
-        json.dump(epoch_metrics, f)
-
-
-torch.save(trainer.model.state_dict(), "models/trained/roberta_url.pth")
 
 test_hist = trainer.test()
 print(test_hist)

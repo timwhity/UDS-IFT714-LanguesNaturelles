@@ -1,3 +1,4 @@
+
 from torch.utils.data import DataLoader
 from pathlib import Path
 
@@ -31,9 +32,10 @@ def _get_dataloaders(trainset, testset, batch_size, num_workers, train_ratio):
         valid_size = len(trainset) - train_size
         trainset, validset = torch.utils.data.random_split(trainset, [train_size, valid_size])
 
-        train_loader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
-        valid_loader = DataLoader(validset, batch_size=batch_size, shuffle=True, num_workers=num_workers)
+        train_loader = DataLoader(trainset, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True)
+        valid_loader = DataLoader(validset, batch_size=batch_size, shuffle=True, num_workers=num_workers, pin_memory=True)
 
-    test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=num_workers)
+    test_loader = DataLoader(testset, batch_size=batch_size, shuffle=False, num_workers=num_workers, pin_memory=True)
 
     return train_loader, valid_loader, test_loader
+
