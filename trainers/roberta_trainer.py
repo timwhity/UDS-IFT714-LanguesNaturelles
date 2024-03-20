@@ -1,20 +1,21 @@
 import torch
 from tqdm import tqdm
-import string
 from .base_trainer import BaseTrainer
 
 class RobertaTrainer(BaseTrainer):
-    def __init__(self, model, tokenizer, loss_fn, optimizer, scheduler, trainloader, validloader, testloader, classes, device, max_seq_length=2048) -> None:
-        super().__init__(model, tokenizer, loss_fn, optimizer, scheduler, trainloader, validloader, testloader, classes, device)
+    def __init__(self, experiment, model, tokenizer, loss_fn, optimizer, scheduler, trainloader, validloader, testloader, classes, device, limit=None, max_seq_length=2048) -> None:
+        super().__init__(experiment, "roberta", model, tokenizer, loss_fn, optimizer, scheduler, trainloader, validloader, testloader, classes, device, limit)
         self.max_seq_length = max_seq_length
-    
-    def train(self, epoch_title: str = "Epoch"):
+
+    def train(self, eval_each: int = 0, epoch_title: str = "Epoch"):
         self.model.train()
 
         total_loss = 0.0
         total_correct = 0
+        count_examples = 0
+        count_batches = 0
 
-        for inputs, targets in tqdm(self.trainloader, desc=epoch_title):
+        for batch_index, (inputs, targets) in enumerate(tqdm(self.trainloader, desc=epoch_title)):
             
             # Tokenize the inputs
             tokenized = self.tokenizer(inputs,
@@ -30,6 +31,7 @@ class RobertaTrainer(BaseTrainer):
             self.optimizer.zero_grad()
 
             outputs = self.model(inputs_ids, attention_mask=attention_mask).squeeze(1)
+            preds = (outputs > 0.5).long()
             loss = self.loss_fn(outputs, targets)
 
             loss.backward()
@@ -37,28 +39,50 @@ class RobertaTrainer(BaseTrainer):
             self.scheduler.step()
 
             total_loss += loss.item()
-            total_correct += (outputs == targets).sum().item()
-        
-        self.history["train"]["loss"].append(total_loss / len(self.trainloader))
-        self.history["train"]["accuracy"].append(total_correct / len(self.trainloader.dataset))
+            total_correct += (preds == targets).sum().item()
 
-        return self.history["train"]
+            # Keep the count of examples and batches so the metrics are accurate.
+            count_examples += len(targets)
+            count_batches += 1
 
+            lr = self.optimizer.param_groups[0]["lr"]
+            avg_loss = total_loss / count_batches
+            accuracy = total_correct / count_examples
+            self.metrics.update_train_metrics(avg_loss, accuracy, lr)
+
+            if (eval_each > 0) and (batch_index % eval_each == 0):
+                self.validate()
+
+            if accuracy > 0.97:
+                break
+
+            if self.limit and (batch_index >= self.limit): # Break prematurely for debugging on CPU or poor GPU
+                break
+
+        return self.metrics.get_metrics("train")
     
-    def validate(self):
-        hist_key = "valid"
+    def validate(self, test: bool = False):
+        desc = "valid"
         dataloader = self.validloader
+        if test:
+            desc = "test"
+            dataloader = self.testloader
+            TP = 0 # Confusion matrix values counters
+            TN = 0
+            FP = 0
+            FN = 0
 
         total_loss = 0.0
         total_correct = 0
-        count = 0
+        count_examples = 0
+        count_batches = 0
 
         self.model.eval()
 
-        pbar = tqdm(range(len(dataloader)), desc=hist_key)
+        pbar = tqdm(range(len(dataloader)), desc=desc)
 
         with torch.no_grad():
-            for inputs, targets in dataloader:
+            for batch_index, (inputs, targets) in enumerate(dataloader):
                 tokenized = self.tokenizer(inputs,
                                         max_length=self.max_seq_length,
                                         padding="max_length",
@@ -73,68 +97,29 @@ class RobertaTrainer(BaseTrainer):
                 preds = (outputs > 0.5).long()
                 loss = self.loss_fn(outputs, targets.float())
 
+                if test:
+                    TP += ((preds == 1) & (targets == 1)).sum().item()
+                    TN += ((preds == 0) & (targets == 0)).sum().item()
+                    FP += ((preds == 1) & (targets == 0)).sum().item()
+                    FN += ((preds == 0) & (targets == 1)).sum().item()
+
                 pbar.update()
                 total_loss += loss.item()
                 total_correct += (preds == targets).sum().item()
-                count += len(targets)
-        
-        assert count == len(dataloader.dataset)
+                count_examples += len(targets)
+                count_batches += 1
 
-        self.history[hist_key]["loss"].append(total_loss / len(dataloader.dataset))
-        self.history[hist_key]["accuracy"].append(total_correct / len(dataloader.dataset))
-
-        return self.history[hist_key]
-    
-    def test(self, limit: int = -1):
-        dataloader = self.testloader
-
-        total_loss = 0.0
-        total_correct = 0
-        count = 0
-
-        self.model.eval()
-
-        pbar = tqdm(range(len(dataloader)), desc="test")
-
-        TP, TN, FP, FN = 0, 0, 0, 0
-        with torch.no_grad():
-            for i, (inputs, targets) in enumerate(dataloader):
-                if i == limit:  # Limit the number of iterations
+                if self.limit and (batch_index >= self.limit): # Break prematurely for debugging on CPU or poor GPU
                     break
-                tokenized = self.tokenizer(inputs,
-                                        max_length=self.max_seq_length,
-                                        padding="max_length",
-                                        truncation=True,
-                                        return_attention_mask=True,
-                                        add_special_tokens=True)
-                inputs_ids = torch.tensor(tokenized["input_ids"], dtype=torch.long, device=self.device)
-                attention_mask = torch.tensor(tokenized["attention_mask"], dtype=torch.long, device=self.device)
-                targets = targets.to(self.device)
 
-                outputs = self.model(inputs_ids, attention_mask=attention_mask).squeeze(1)
-                preds = (outputs > 0.5).long()
-                loss = self.loss_fn(outputs, targets.float())
+        avg_loss = total_loss / count_batches
+        accuracy = total_correct / count_examples
 
-                TP += ((preds == 1) & (targets == 1)).sum().item()
-                TN += ((preds == 0) & (targets == 0)).sum().item()
-                FP += ((preds == 1) & (targets == 0)).sum().item()
-                FN += ((preds == 0) & (targets == 1)).sum().item()
-
-                pbar.update()
-                total_loss += loss.item()
-                total_correct += (preds == targets).sum().item()
-                count += len(targets)
-        
-        assert count == len(dataloader.dataset) or limit != -1
-
-        precision = TP / (TP + FP)
-        recall = TP / (TP + FN)
-        f1 = 2 * (precision * recall) / (precision + recall)
-
-        self.history["test"]["loss"].append(total_loss / len(dataloader.dataset))
-        self.history["test"]["accuracy"].append(total_correct / len(dataloader.dataset))
-        self.history["test"]["precision"] = precision
-        self.history["test"]["recall"] = recall
-        self.history["test"]["f1"] = f1
-
-        return self.history["test"]
+        if test:
+            return self.metrics.update_test_metrics(avg_loss, accuracy, TP, TN, FP, FN)
+        else:
+            return self.metrics.update_valid_metrics(avg_loss, accuracy)
+    
+    def test(self):
+        return self.validate(test=True)
+    
