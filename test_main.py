@@ -10,10 +10,13 @@ from data.data_utils import load_url_dataset
 from trainers.trainer_metrics import TrainerMetrics
 from utils.utils import add_default_arguments
 
-def load_model(model_name: str):
+def load_model(model_name: str, experiment_name: str):
+    experiement_dir = Path("models/trained") / experiment_name
     # Return the model, tokenizer, and trainer class for the given model name
     if model_name == "roberta":
-        return RobertaUrl(), transformers.RobertaTokenizer.from_pretrained("roberta-base"), RobertaTrainer
+        model = RobertaUrl()
+        model.load_state_dict(torch.load(experiement_dir / "roberta_url.pth"))
+        return model, transformers.RobertaTokenizer.from_pretrained("roberta-base"), RobertaTrainer
     else:
         raise ValueError(f"Invalid model name: {model_name}")
     
@@ -41,7 +44,7 @@ def main(args):
     device = ptu.get_device()
 
     # Load the model
-    model, tokenizer, trainer_cls = load_model(model_name)
+    model, tokenizer, trainer_cls = load_model(model_name, experiment_name)
     model = model.to(device)
     loss_fn = torch.nn.BCELoss()
 
