@@ -45,12 +45,9 @@ class RobertaTrainer(BaseTrainer):
         return self.history["train"]
 
     
-    def validate(self, test: bool = False):
+    def validate(self):
         hist_key = "valid"
         dataloader = self.validloader
-        if test:
-            hist_key = "test"
-            dataloader = self.testloader
 
         total_loss = 0.0
         total_correct = 0
@@ -88,5 +85,56 @@ class RobertaTrainer(BaseTrainer):
 
         return self.history[hist_key]
     
-    def test(self):
-        return self.validate(test=True)
+    def test(self, limit: int = -1):
+        dataloader = self.testloader
+
+        total_loss = 0.0
+        total_correct = 0
+        count = 0
+
+        self.model.eval()
+
+        pbar = tqdm(range(len(dataloader)), desc="test")
+
+        TP, TN, FP, FN = 0, 0, 0, 0
+        with torch.no_grad():
+            for i, (inputs, targets) in enumerate(dataloader):
+                if i == limit:  # Limit the number of iterations
+                    break
+                tokenized = self.tokenizer(inputs,
+                                        max_length=self.max_seq_length,
+                                        padding="max_length",
+                                        truncation=True,
+                                        return_attention_mask=True,
+                                        add_special_tokens=True)
+                inputs_ids = torch.tensor(tokenized["input_ids"], dtype=torch.long, device=self.device)
+                attention_mask = torch.tensor(tokenized["attention_mask"], dtype=torch.long, device=self.device)
+                targets = targets.to(self.device)
+
+                outputs = self.model(inputs_ids, attention_mask=attention_mask).squeeze(1)
+                preds = (outputs > 0.5).long()
+                loss = self.loss_fn(outputs, targets.float())
+
+                TP += ((preds == 1) & (targets == 1)).sum().item()
+                TN += ((preds == 0) & (targets == 0)).sum().item()
+                FP += ((preds == 1) & (targets == 0)).sum().item()
+                FN += ((preds == 0) & (targets == 1)).sum().item()
+
+                pbar.update()
+                total_loss += loss.item()
+                total_correct += (preds == targets).sum().item()
+                count += len(targets)
+        
+        assert count == len(dataloader.dataset) or limit != -1
+
+        precision = TP / (TP + FP)
+        recall = TP / (TP + FN)
+        f1 = 2 * (precision * recall) / (precision + recall)
+
+        self.history["test"]["loss"].append(total_loss / len(dataloader.dataset))
+        self.history["test"]["accuracy"].append(total_correct / len(dataloader.dataset))
+        self.history["test"]["precision"] = precision
+        self.history["test"]["recall"] = recall
+        self.history["test"]["f1"] = f1
+
+        return self.history["test"]

@@ -27,7 +27,7 @@ loss_fn = torch.nn.BCELoss()
 optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)
 scheduler = transformers.get_scheduler("linear", optimizer, num_warmup_steps=0, num_training_steps=nb_training_steps)
 
-model.load_state_dict(torch.load("models/trained/roberta_url.pth"))
+model.load_state_dict(torch.load("models/trained/roberta_url.pth", map_location=device))
 
 trainer = RobertaTrainer(model,
                          tokenizer,
@@ -41,7 +41,7 @@ trainer = RobertaTrainer(model,
                          device=device,
                          max_seq_length=max_seq_length)
 
-test_hist = trainer.test()
+test_hist = trainer.test(limit=7)
 print(test_hist)
 
 # Save test metrics to JSON file
