@@ -2,7 +2,7 @@
 from torch.utils.data import DataLoader
 from pathlib import Path
 
-from dataset import UrlDataset
+from .dataset import UrlDataset
 import torch
 import pandas as pd
 

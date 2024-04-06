@@ -4,19 +4,26 @@ import transformers
 from pathlib import Path
 
 from models.roberta import RobertaUrl
+from models.decision_tree import DecisionTreeUrl
 from trainers.roberta_trainer import RobertaTrainer
+from trainers.decision_tree_trainer import DecisionTreeTrainer
+from data.feature_extractor import FeatureExtractor
 import utils.torch_utils as ptu
 from data.data_utils import load_url_dataset
 from trainers.trainer_metrics import TrainerMetrics
 from utils.utils import add_default_arguments
 
 def load_model(model_name: str, experiment_name: str):
-    experiement_dir = Path("models/trained") / experiment_name
+    experiment_dir = Path("models/trained") / experiment_name
     # Return the model, tokenizer, and trainer class for the given model name
     if model_name == "roberta":
         model = RobertaUrl()
-        model.load_state_dict(torch.load(experiement_dir / "roberta_url.pth"))
+        model.load_state_dict(torch.load(experiment_dir / "roberta_url.pth"))
         return model, transformers.RobertaTokenizer.from_pretrained("roberta-base"), RobertaTrainer
+    elif model_name == "decision_tree":
+        model = DecisionTreeUrl()
+        model.load_state_dict(experiment_dir / "decision_tree_url.pkl")
+        return model, None, DecisionTreeTrainer
     else:
         raise ValueError(f"Invalid model name: {model_name}")
     

@@ -7,6 +7,38 @@ class RobertaTrainer(BaseTrainer):
         super().__init__(experiment, "roberta", model, tokenizer, loss_fn, optimizer, scheduler, trainloader, validloader, testloader, classes, device, limit)
         self.max_seq_length = max_seq_length
 
+    def predict(self, texts):
+
+        # For LIME predictions, we need to train by batches
+        def batch(iteratable, n=1):
+            l = len(iteratable)
+            for ndx in range(0, l, n):
+                yield iteratable[ndx:min(ndx + n, l)]
+
+        self.model.eval()
+        batch_preds = []
+        for text_batch in tqdm(batch(texts, n=32), total=len(texts)//32 + 1):
+            tokenized = self.tokenizer(text_batch,
+                                    max_length=self.max_seq_length,
+                                    padding="max_length",
+                                    truncation=True,
+                                    return_attention_mask=True,
+                                    add_special_tokens=True)
+            inputs_ids = torch.tensor(tokenized["input_ids"], dtype=torch.long, device=self.device)
+            attention_mask = torch.tensor(tokenized["attention_mask"], dtype=torch.long, device=self.device)
+
+            with torch.no_grad():
+                outputs = self.model(inputs_ids, attention_mask=attention_mask).squeeze(1)
+                
+                prob_benign = 1 - outputs
+
+                preds = torch.stack((prob_benign, outputs), dim=1)
+                batch_preds.append(preds)
+
+        batch_preds = torch.concat(batch_preds)
+
+        return batch_preds.cpu().numpy()
+
     def train(self, eval_each: int = 0, epoch_title: str = "Epoch"):
         self.model.train()
 

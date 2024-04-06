@@ -44,7 +44,6 @@ class BaseTrainer(ABC):
             "classes": list_classes
         }
         self.metrics = TrainerMetrics(config=config_info)
-        
 
     def reset_metrics(self):
         self.metrics = TrainerMetrics()
@@ -76,4 +75,8 @@ class BaseTrainer(ABC):
     
     @abstractmethod
     def test(self):
+        raise NotImplementedError
+    
+    @abstractmethod
+    def predict(self, texts):
         raise NotImplementedError
