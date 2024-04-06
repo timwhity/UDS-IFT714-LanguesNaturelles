@@ -14,10 +14,14 @@
             "name": "Split Preproc Dataset",
             "type": "python",
             "request": "launch",
-            "program": "${file}",
+            "program": "${workspaceFolder}/data/split_data.py",
             "console": "integratedTerminal",
-            "cwd": "${workspaceFolder}/data",
-            "args": ["urldata.csv"]
+            "args": [
+                "data/dataset_1/urldata.csv",
+                "data/dataset_2/malicious_phish.csv",
+                "--save_dir", "data/combined_dataset_12_balanced/",
+                "--balance"
+            ]
         }
     ]
 }
