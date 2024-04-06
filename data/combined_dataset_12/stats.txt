@@ -1,0 +1,14 @@
+\begin{table}[]
+\begin{tabular}{|l|l|}
+\hline
+Statistique & Valeur \\ 
+\hline
+Nombre total d'url & 1090221 \\ 
+Nombre d'url bénines & 773818 \\ 
+Nombres d'url malicieuses & 316403 \\ 
+Longueur moyenne & 59.9571903311347 \\ 
+Longueur maximum & 2314 \\ 
+Longueur mininimum & 1 \\ 
+\hline
+\end{tabular}
+\end{table}
