@@ -13,7 +13,8 @@ class DecisionTreeUrl():
 
     def forward(self, inputs, probs=False):
         if probs:
-            return self.tree.predict_proba(inputs)[:, 1]
+            proba = self.tree.predict_proba(inputs)
+            return proba
         else:
             return self.tree.predict(inputs)
     

@@ -23,7 +23,13 @@ class UrlExplainer(LimeTextExplainer):
         assert self.save_dir.exists(), f"Directory {self.save_dir} does not exist"
 
     def explain_list(self, urls: List[str], func) -> List[str]:
-        self.last_instances_explained = [self.explain_instance(url, func) for url in urls]
+        self.last_instances_explained = []
+        
+        for url in urls:
+            print(url)
+            exp = self.explain_instance("test.com", func)
+            self.last_instances_explained.append(exp)
+        
         return self.last_instances_explained
     
     def show_last_explanations(self, show_in_notebook=False):

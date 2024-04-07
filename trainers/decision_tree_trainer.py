@@ -8,7 +8,8 @@ class DecisionTreeTrainer(BaseTrainer):
         self.feature_extractor = FeatureExtractor()
 
     def predict(self, texts):
-        return self.model(self.feature_extractor.extract_batch(texts), probs=True)
+        probs = self.model(self.feature_extractor.extract_batch(texts), probs=True)
+        return probs
 
     def train(self, eval_each: int = 0, epoch_title: str = "Epoch"):
         X_train, y_train = self.trainloader.get_all_data()
