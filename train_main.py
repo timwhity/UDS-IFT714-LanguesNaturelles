@@ -19,9 +19,7 @@ def main(args):
     experiment_name = args.experiment_name
     model_name = args.model_name
 
-    (trainloader, validloader, testloader), classes = load_url_dataset(splits_directory, batch_size, num_workers=num_workers)
-
-    nb_training_steps = len(trainloader) * num_epochs
+    nb_training_steps = 27597
     max_seq_length = 512 # Load that from the dataset config
     device = ptu.get_device()
 
@@ -44,10 +42,8 @@ def main(args):
                         loss_fn,
                         optimizer,
                         scheduler,
-                        trainloader,
-                        validloader,
-                        testloader,
-                        classes,
+                        splits_directory,
+                        batch_size,
                         device=device,
                         max_seq_length=max_seq_length,
                         limit=args.limit)

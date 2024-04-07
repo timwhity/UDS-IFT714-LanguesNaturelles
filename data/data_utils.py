@@ -47,7 +47,25 @@ def load_url_dataset(splits_directory: str, batch_size, train_ratio: float = 0.9
 
     return _get_dataloaders(trainset, testset, batch_size, num_workers, train_ratio), testset.classes
 
+def load_full_url_dataset(splits_directory: str, batch_size, train_ratio: float = 0.9, num_workers:int = 2, test: bool = False):
+    splits_path = Path(splits_directory)
 
+    assert splits_path.exists(), f"{splits_path} does not exist"
+    assert splits_path.is_dir(), f"{splits_path} is not a directory"
+
+    train_csv = splits_path / "train.csv"
+    test_csv = splits_path / "test.csv"
+
+    trainset = None
+    if not test:
+        trainset = UrlDataset(train_csv)
+        train_size = int(train_ratio * len(trainset))
+        valid_size = len(trainset) - train_size
+        trainset, validset = torch.utils.data.random_split(trainset, [train_size, valid_size])
+
+    testset = UrlDataset(test_csv)
+
+    return trainset, validset, testset, testset.classes
 
 def _get_dataloaders(trainset, testset, batch_size, num_workers, train_ratio):
     train_loader = None
