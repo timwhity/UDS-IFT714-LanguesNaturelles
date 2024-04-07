@@ -26,3 +26,6 @@ class DecisionTreeUrl():
     
     def load_state_dict(self, model_path):
         self.tree = joblib.load(model_path)[0]
+
+    def save_state_dict(self, model_path):
+        joblib.dump([self.tree], model_path)

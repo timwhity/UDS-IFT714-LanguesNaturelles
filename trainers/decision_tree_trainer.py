@@ -12,7 +12,7 @@ class DecisionTreeTrainer(BaseTrainer):
         return probs
 
     def train(self, eval_each: int = 0, epoch_title: str = "Epoch"):
-        X_train, y_train = self.trainloader.get_all_data()
+        X_train, y_train = self.trainloader.dataset.get_all_data()
 
         # Train the model (in one shot)
         pbar = tqdm(total=1, desc=epoch_title)
@@ -30,7 +30,7 @@ class DecisionTreeTrainer(BaseTrainer):
         return self.metrics.get_metrics("train")
 
     def validate(self, test: bool = False):
-        X_valid, y_valid = self.testloader.get_all_data() if test else self.validloader.get_all_data()
+        X_valid, y_valid = self.testloader.dataset.get_all_data() if test else self.validloader.dataset.get_all_data()
 
         valid_accuracy = (y_valid == self.model(self.feature_extractor.extract_features(X_valid))).mean()
         self.metrics.update_valid_metrics(0.0, valid_accuracy, 0.0)
@@ -38,3 +38,6 @@ class DecisionTreeTrainer(BaseTrainer):
 
     def test(self):
         return self.validate(test=True)
+    
+    def save_model(self):
+        self.model.save(self.experiment_dir / "decision_tree_url.pkl")

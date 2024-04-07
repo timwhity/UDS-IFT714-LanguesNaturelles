@@ -12,30 +12,7 @@ import utils.torch_utils as ptu
 from data.data_utils import load_url_dataset
 from trainers.trainer_metrics import TrainerMetrics
 from utils.utils import add_default_arguments
-
-def load_model(model_name: str, experiment_name: str):
-    experiment_dir = Path("models/trained") / experiment_name
-    # Return the model, tokenizer, and trainer class for the given model name
-    if model_name == "roberta":
-        model = RobertaUrl()
-        model.load_state_dict(torch.load(experiment_dir / "roberta_url.pth"))
-        return model, transformers.RobertaTokenizer.from_pretrained("roberta-base"), RobertaTrainer
-    elif model_name == "decision_tree":
-        model = DecisionTreeUrl()
-        model.load_state_dict(experiment_dir / "decision_tree_url.pkl")
-        return model, None, DecisionTreeTrainer
-    else:
-        raise ValueError(f"Invalid model name: {model_name}")
-    
-def load_config_data(experiment_name: str):
-    # Load the config from the experiment directory
-    experiment_dir = Path("models/trained") / experiment_name
-    metrics = TrainerMetrics.from_file(experiment_dir / "metrics.json", config_only=True)
-    
-    model_name = metrics.config["model"]
-    batch_size = metrics.config["batch_size"]
-
-    return model_name, batch_size
+from model_utils import load_config_data, load_model
 
 def main(args):
     # Load the dataset
