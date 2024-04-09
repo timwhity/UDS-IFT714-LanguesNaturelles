@@ -5,8 +5,8 @@ from typing import List
 import torch
 
 class CNNTrainer(BaseTrainer):
-	def __init__(self, experiment, model, tokenizer, loss_fn, optimizer, scheduler, trainloader, validloader, testloader, classes, device, limit=None, max_seq_length=256) -> None:
-		super().__init__(experiment, "cnn", model, tokenizer, loss_fn, optimizer, scheduler, trainloader, validloader, testloader, classes, device, limit)
+	def __init__(self, experiment, model, tokenizer, loss_fn, optimizer, scheduler, splits_directory, batch_size, device, limit = None, max_seq_length=2048) -> None:
+		super().__init__(experiment, "cnn", model, tokenizer, loss_fn, optimizer, scheduler, splits_directory, batch_size, device, limit = None)
 		self.max_seq_length = 256
 		self.char_dic = "abcdefghijklmnopqrstuvwxyz0123456789-,;.!?:’'/\\|_@#$%ˆ&*˜‘+-=<>()[]{}\n"
 		self.nb_char_dic = 70
