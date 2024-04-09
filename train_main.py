@@ -5,6 +5,8 @@ import json
 
 from models.roberta import RobertaUrl
 from trainers.roberta_trainer import RobertaTrainer
+from models.cnn import CNNUrl
+from trainers.cnn_trainer import CNNTrainer
 import utils.torch_utils as ptu
 from utils.utils import add_default_arguments
 from data.data_utils import load_url_dataset
@@ -14,6 +16,8 @@ def load_model(model_name: str):
     # Return the model, tokenizer, and trainer class for the given model name
     if model_name == "roberta":
         return RobertaUrl(), transformers.RobertaTokenizer.from_pretrained("roberta-base"), RobertaTrainer
+    elif model_name == "cnn":
+        return CNNUrl(), None, CNNTrainer
     else:
         raise ValueError(f"Invalid model name: {model_name}")
 
@@ -69,7 +73,7 @@ def main(args):
 if '__main__' == __name__:
     parser = argparse.ArgumentParser(description="Train a model on the URL dataset")
     parser = add_default_arguments(parser)
-    parser.add_argument("--model_name", type=str, default="roberta", help="The name of the model to use", nargs="?", choices=["roberta"])
+    parser.add_argument("--model_name", type=str, default="roberta", help="The name of the model to use", nargs="?", choices=["roberta", "cnn"])
     parser.add_argument("--batch_size", type=int, default=16, help="The batch size for training")
     parser.add_argument("--num_epochs", type=int, default=1, help="The number of epochs to train for")
 

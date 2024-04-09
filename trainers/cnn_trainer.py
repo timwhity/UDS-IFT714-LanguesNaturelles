@@ -13,33 +13,33 @@ class CNNTrainer(BaseTrainer):
 		assert len(self.char_dic) == self.nb_char_dic
 
 	
-	def tokenizer(self, url: str) -> np.array:
+	def tokenize(self, url: str) -> np.array:
 		"""
 		Input : string of the url
-		Output : numpy array (nb_char_dic, max_seq_length)
+		Output : numpy array (max_seq_length, nb_char_dic)
 		"""
-		sparse_vector = np.zeros(( self.nb_char_dic, self.max_seq_length))
+		sparse_vector = np.zeros((self.max_seq_length, self.nb_char_dic))
 		nb_accepted_characters = 0
-		for i, c in enumerate(url):
+		for c in url:
 			if c in self.char_dic:
-				sparse_vector[self.char_dic.index(c), nb_accepted_characters] = 1
+				sparse_vector[nb_accepted_characters, self.char_dic.index(c)] = 1
 				nb_accepted_characters += 1
 			elif c.lower() in self.char_dic:
-				sparse_vector[self.char_dic.index(c.lower()), nb_accepted_characters] = 1
+				sparse_vector[nb_accepted_characters, self.char_dic.index(c.lower())] = 1
 				nb_accepted_characters += 1
 			if nb_accepted_characters == self.max_seq_length:
 				break
 		return sparse_vector
 	
-	def tokenizer_batch(self, urls: List[str]) -> np.array:
+	def tokenize_batch(self, urls: List[str]) -> np.array:
 		"""
 		Input : list of urls
-		Output : numpy array (len(urls), nb_char_dic, max_seq_length)
+		Output : numpy array (len(urls), max_seq_length, nb_char_dic)
 		"""
-		return np.array([self.tokenizer(url) for url in urls])
+		return np.array([self.tokenize(url) for url in urls])
 	
 	def predict(self, texts: List[str]):
-		return self.model(self.tokenizer_batch(texts), probs=True)
+		return self.model(self.tokenize_batch(texts), probs=True)
 	
 	def train(self, eval_each: int = 0, epoch_title: str = "Epoch"):
 		self.model.train()
@@ -50,9 +50,10 @@ class CNNTrainer(BaseTrainer):
 		count_batches = 0
 
 		for batch_index, (inputs, targets) in enumerate(tqdm(self.trainloader, desc=epoch_title)):
-			inputs = self.tokenizer_batch(inputs)
-			inputs = inputs.to(self.device)
-			targets = targets.to(self.device)
+			inputs = self.tokenize_batch(inputs)
+			inputs = torch.tensor(inputs, dtype=torch.float32, device=self.device)
+			# targets = torch.tensor(targets, dtype=torch.long)
+			targets = targets.float().to(self.device)
 
 			self.optimizer.zero_grad()
 
@@ -69,9 +70,10 @@ class CNNTrainer(BaseTrainer):
 			count_examples += len(targets)
 			count_batches += 1
 
+			lr = self.optimizer.param_groups[0]["lr"]
 			avg_loss = total_loss / count_batches
 			accuracy = total_correct / count_examples
-			self.metrics.update_train_metrics(avg_loss, accuracy, 0.0)
+			self.metrics.update_train_metrics(avg_loss, accuracy, lr)
 
 			if (eval_each > 0) and (batch_index % eval_each == 0):
 				self.validate()
@@ -100,8 +102,10 @@ class CNNTrainer(BaseTrainer):
 
 		with torch.no_grad():
 			for batch_index, (inputs, targets) in enumerate(tqdm(dataloader, desc=desc)):
-				inputs = self.tokenizer_batch(inputs)
+				inputs = self.tokenize_batch(inputs)
+				inputs = torch.tensor(inputs, dtype=torch.float32)
 				inputs = inputs.to(self.device)
+				targets = torch.tensor(targets, dtype=torch.long)
 				targets = targets.to(self.device)
 
 				outputs = self.model(inputs)
