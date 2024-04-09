@@ -22,6 +22,17 @@
                 "--save_dir", "data/combined_dataset_12_balanced/",
                 "--balance"
             ]
+        },
+        {
+            "name": "Debug training",
+            "type": "python",
+            "request": "launch",
+            "cwd": "${workspaceFolder}",
+            "program": "${workspaceFolder}/train_main.py",
+            "console": "integratedTerminal",
+            "args": [
+                "decision_tree_d1", "data/combined_dataset_12", "--model_name", "decision_tree"
+            ]
         }
     ]
 }

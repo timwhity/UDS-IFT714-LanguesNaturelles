@@ -3,8 +3,8 @@ from tqdm import tqdm
 from .base_trainer import BaseTrainer
 
 class RobertaTrainer(BaseTrainer):
-    def __init__(self, experiment, model, tokenizer, loss_fn, optimizer, scheduler, trainloader, validloader, testloader, classes, device, limit=None, max_seq_length=2048) -> None:
-        super().__init__(experiment, "roberta", model, tokenizer, loss_fn, optimizer, scheduler, trainloader, validloader, testloader, classes, device, limit)
+    def __init__(self, experiment, model, tokenizer, loss_fn, optimizer, scheduler, splits_directory, batch_size, device, limit = None, max_seq_length=2048) -> None:
+        super().__init__(experiment, "roberta", model, tokenizer, loss_fn, optimizer, scheduler, splits_directory, batch_size, device, limit = None)
         self.max_seq_length = max_seq_length
 
     def predict(self, texts):
@@ -85,11 +85,13 @@ class RobertaTrainer(BaseTrainer):
             if (eval_each > 0) and (batch_index % eval_each == 0):
                 self.validate()
 
-            if accuracy > 0.97:
+            if accuracy > 0.995:
                 break
 
             if self.limit and (batch_index >= self.limit): # Break prematurely for debugging on CPU or poor GPU
                 break
+
+        self.test()
 
         return self.metrics.get_metrics("train")
     

@@ -3,9 +3,10 @@ from abc import ABC, abstractmethod
 from pathlib import Path
 import warnings
 from .trainer_metrics import TrainerMetrics
+from data.data_utils import load_url_dataset
 
 class BaseTrainer(ABC):
-    def __init__(self, experiment, model_name, model, tokenizer, loss_fn, optimizer, scheduler, trainloader, validloader, testloader, classes, device, limit = None) -> None:
+    def __init__(self, experiment, model_name, model, tokenizer, loss_fn, optimizer, scheduler, splits_directory, batch_size, device, limit = None) -> None:
         self.experiment_name = experiment
         self.experiment_dir = Path("models/trained") / self.experiment_name
 
@@ -21,10 +22,7 @@ class BaseTrainer(ABC):
         self.optimizer = optimizer
         self.scheduler = scheduler
 
-        self.trainloader = trainloader
-        self.validloader = validloader
-        self.testloader = testloader
-        self.classes = classes
+        (self.trainloader, self.validloader, self.testloader), self.classes = load_url_dataset(splits_directory, batch_size, num_workers=4)
 
         self.limit = limit
         assert self.limit is None or self.limit > 0, "Limit must be greater than 0"

@@ -4,7 +4,7 @@ import torch
 from torch.utils.data import Dataset
 
 class UrlDataset(Dataset):
-    def __init__(self, dataset_csv_file, transform=None, url_column=0, result_column=1):
+    def __init__(self, dataset_csv_file, transform=None, url_column=1, result_column=2):
         self.df = pd.read_csv(dataset_csv_file, index_col=0)
         self.transform = transform
         self.classes = [0, 1]

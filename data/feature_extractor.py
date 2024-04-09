@@ -14,6 +14,7 @@ class FeatureExtractor:
         Input : string of the url
         Output : numpy array of features extracted from the url
         """
+
         if url.startswith('https://'):
             https_mode = 1
         elif url.startswith('http://'):
@@ -141,7 +142,12 @@ class FeatureExtractor:
         Input : list of urls
         Output : numpy array of features extracted from the urls, size = (len(urls), nb_features)
         """
-        return array([self.extract(url) for url in urls])
+        full_features = []
+        for url in urls:
+            features = self.extract(url)
+            full_features.append(features)
+
+        return array(full_features)
 
     def count_vowels(self, string: str) -> int:
         return sum(1 for char in string if char in 'aeiouyAEIOUY')
