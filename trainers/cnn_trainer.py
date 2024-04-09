@@ -7,7 +7,7 @@ import torch
 class CNNTrainer(BaseTrainer):
 	def __init__(self, experiment, model, tokenizer, loss_fn, optimizer, scheduler, trainloader, validloader, testloader, classes, device, limit=None, max_seq_length=256) -> None:
 		super().__init__(experiment, "cnn", model, tokenizer, loss_fn, optimizer, scheduler, trainloader, validloader, testloader, classes, device, limit)
-		self.max_seq_length = max_seq_length
+		self.max_seq_length = 256
 		self.char_dic = "abcdefghijklmnopqrstuvwxyz0123456789-,;.!?:’'/\\|_@#$%ˆ&*˜‘+-=<>()[]{}\n"
 		self.nb_char_dic = 70
 		assert len(self.char_dic) == self.nb_char_dic
@@ -16,16 +16,16 @@ class CNNTrainer(BaseTrainer):
 	def tokenize(self, url: str) -> np.array:
 		"""
 		Input : string of the url
-		Output : numpy array (max_seq_length, nb_char_dic)
+		Output : numpy array (nb_char_dic, max_seq_length)
 		"""
-		sparse_vector = np.zeros((self.max_seq_length, self.nb_char_dic))
+		sparse_vector = np.zeros(( self.nb_char_dic, self.max_seq_length))
 		nb_accepted_characters = 0
 		for c in url:
 			if c in self.char_dic:
-				sparse_vector[nb_accepted_characters, self.char_dic.index(c)] = 1
+				sparse_vector[self.char_dic.index(c), nb_accepted_characters] = 1
 				nb_accepted_characters += 1
 			elif c.lower() in self.char_dic:
-				sparse_vector[nb_accepted_characters, self.char_dic.index(c.lower())] = 1
+				sparse_vector[self.char_dic.index(c.lower()), nb_accepted_characters] = 1
 				nb_accepted_characters += 1
 			if nb_accepted_characters == self.max_seq_length:
 				break
@@ -57,8 +57,8 @@ class CNNTrainer(BaseTrainer):
 
 			self.optimizer.zero_grad()
 
-			outputs = self.model(inputs)
-			preds = outputs.argmax(dim=1)
+			outputs = self.model(inputs).squeeze(1)
+			preds = (outputs > 0.5).long()
 			loss = self.loss_fn(outputs, targets)
 
 			loss.backward()
@@ -108,8 +108,8 @@ class CNNTrainer(BaseTrainer):
 				targets = torch.tensor(targets, dtype=torch.long)
 				targets = targets.to(self.device)
 
-				outputs = self.model(inputs)
-				preds = outputs.argmax(dim=1)
+				outputs = self.model(inputs).squeeze(1)
+				preds = (outputs > 0.5).long()
 				loss = self.loss_fn(outputs, targets)
 
 				total_loss += loss.item()
