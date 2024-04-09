@@ -1,6 +1,6 @@
 from .base_trainer import BaseTrainer
 from tqdm import tqdm
-from numpy import array
+import numpy as np
 from typing import List
 import torch
 
@@ -8,34 +8,35 @@ class CNNTrainer(BaseTrainer):
 	def __init__(self, experiment, model, tokenizer, loss_fn, optimizer, scheduler, trainloader, validloader, testloader, classes, device, limit=None, max_seq_length=256) -> None:
 		super().__init__(experiment, "cnn", model, tokenizer, loss_fn, optimizer, scheduler, trainloader, validloader, testloader, classes, device, limit)
 		self.max_seq_length = max_seq_length
-		self.char_dic = "abcdefghijklmnopqrstuvwxyz0123456789-_.~!*';:@&=+$,/?#"
-		self.nb_char_dic = len(self.char_dic)
+		self.char_dic = "abcdefghijklmnopqrstuvwxyz0123456789-,;.!?:’'/\\|_@#$%ˆ&*˜‘+-=<>()[]{}\n"
+		self.nb_char_dic = 70
+		assert len(self.char_dic) == self.nb_char_dic
 
 	
-	def tokenizer(self, url: str) -> array:
+	def tokenizer(self, url: str) -> np.array:
 		"""
 		Input : string of the url
-		Output : numpy array (max_seq_length, nb_char_dic)
+		Output : numpy array (nb_char_dic, max_seq_length)
 		"""
-		sparse_vector = array((self.max_seq_length, self.nb_char_dic))
+		sparse_vector = np.zeros(( self.nb_char_dic, self.max_seq_length))
 		nb_accepted_characters = 0
 		for i, c in enumerate(url):
 			if c in self.char_dic:
-				sparse_vector[nb_accepted_characters, self.char_dic.index(c)] = 1
+				sparse_vector[self.char_dic.index(c), nb_accepted_characters] = 1
 				nb_accepted_characters += 1
 			elif c.lower() in self.char_dic:
-				sparse_vector[nb_accepted_characters, self.char_dic.index(c.lower())] = 1
+				sparse_vector[self.char_dic.index(c.lower()), nb_accepted_characters] = 1
 				nb_accepted_characters += 1
 			if nb_accepted_characters == self.max_seq_length:
 				break
 		return sparse_vector
 	
-	def tokenizer_batch(self, urls: List[str]) -> array:
+	def tokenizer_batch(self, urls: List[str]) -> np.array:
 		"""
 		Input : list of urls
-		Output : numpy array (len(urls), max_seq_length, nb_char_dic)
+		Output : numpy array (len(urls), nb_char_dic, max_seq_length)
 		"""
-		return array([self.tokenizer(url) for url in urls])
+		return np.array([self.tokenizer(url) for url in urls])
 	
 	def predict(self, texts: List[str]):
 		return self.model(self.tokenizer_batch(texts), probs=True)
