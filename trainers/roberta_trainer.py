@@ -3,9 +3,44 @@ from tqdm import tqdm
 from .base_trainer import BaseTrainer
 
 class RobertaTrainer(BaseTrainer):
-    def __init__(self, experiment, model, tokenizer, loss_fn, optimizer, scheduler, trainloader, validloader, testloader, classes, device, limit=None, max_seq_length=2048) -> None:
-        super().__init__(experiment, "roberta", model, tokenizer, loss_fn, optimizer, scheduler, trainloader, validloader, testloader, classes, device, limit)
+    def __init__(self, experiment, model, tokenizer, loss_fn, optimizer, scheduler, splits_directory, batch_size, device, limit = None, max_seq_length=2048) -> None:
+        super().__init__(experiment, self._get_model_name(), model, tokenizer, loss_fn, optimizer, scheduler, splits_directory, batch_size, device, limit = None)
         self.max_seq_length = max_seq_length
+
+    def _get_model_name(self):
+        return "roberta"
+
+    def predict(self, texts):
+
+        # For LIME predictions, we need to train by batches
+        def batch(iteratable, n=1):
+            l = len(iteratable)
+            for ndx in range(0, l, n):
+                yield iteratable[ndx:min(ndx + n, l)]
+
+        self.model.eval()
+        batch_preds = []
+        for text_batch in tqdm(batch(texts, n=32), total=len(texts)//32 + 1):
+            tokenized = self.tokenizer(text_batch,
+                                    max_length=self.max_seq_length,
+                                    padding="max_length",
+                                    truncation=True,
+                                    return_attention_mask=True,
+                                    add_special_tokens=True)
+            inputs_ids = torch.tensor(tokenized["input_ids"], dtype=torch.long, device=self.device)
+            attention_mask = torch.tensor(tokenized["attention_mask"], dtype=torch.long, device=self.device)
+
+            with torch.no_grad():
+                outputs = self.model(inputs_ids, attention_mask=attention_mask).squeeze(1)
+                
+                prob_benign = 1 - outputs
+
+                preds = torch.stack((prob_benign, outputs), dim=1)
+                batch_preds.append(preds)
+
+        batch_preds = torch.concat(batch_preds)
+
+        return batch_preds.cpu().numpy()
 
     def train(self, eval_each: int = 0, epoch_title: str = "Epoch"):
         self.model.train()
@@ -53,11 +88,13 @@ class RobertaTrainer(BaseTrainer):
             if (eval_each > 0) and (batch_index % eval_each == 0):
                 self.validate()
 
-            if accuracy > 0.97:
+            if accuracy > 0.995:
                 break
 
             if self.limit and (batch_index >= self.limit): # Break prematurely for debugging on CPU or poor GPU
                 break
+
+        self.test()
 
         return self.metrics.get_metrics("train")
     
