@@ -99,6 +99,7 @@ class CNNTrainer(BaseTrainer):
 
 			if (eval_each > 0) and (batch_index % eval_each == 0):
 				self.validate()
+
 			if self.limit and (batch_index >= self.limit):
 				break
 
@@ -127,7 +128,7 @@ class CNNTrainer(BaseTrainer):
 				inputs = self.tokenize_batch(inputs)
 				inputs = torch.tensor(inputs, dtype=torch.float32)
 				inputs = inputs.to(self.device)
-				targets = torch.tensor(targets, dtype=torch.long)
+				targets = torch.tensor(targets, dtype=torch.float32)
 				targets = targets.to(self.device)
 
 				outputs = self.model(inputs).squeeze(1)
