@@ -39,7 +39,30 @@ class CNNTrainer(BaseTrainer):
 		return np.array([self.tokenize(url) for url in urls])
 	
 	def predict(self, texts: List[str]):
-		return self.model(self.tokenize_batch(texts), probs=True)
+		# For LIME predictions, we need to train by batches
+		def batch(iteratable, n=1):
+			l = len(iteratable)
+			for ndx in range(0, l, n):
+				yield iteratable[ndx:min(ndx + n, l)]
+
+		self.model.eval()
+		batch_preds = []
+		for text_batch in tqdm(batch(texts, n=32), total=len(texts)//32 + 1):
+			inputs = self.tokenize_batch(inputs)
+			inputs = torch.tensor(inputs, dtype=torch.float32, device=self.device)
+			targets = targets.float().to(self.device)
+
+			with torch.no_grad():
+				outputs = self.model(inputs).squeeze(1)
+				
+				prob_benign = 1 - outputs
+
+				preds = torch.stack((prob_benign, outputs), dim=1)
+				batch_preds.append(preds)
+
+		batch_preds = torch.concat(batch_preds)
+
+		return batch_preds.cpu().numpy()
 	
 	def train(self, eval_each: int = 0, epoch_title: str = "Epoch"):
 		self.model.train()
@@ -52,7 +75,6 @@ class CNNTrainer(BaseTrainer):
 		for batch_index, (inputs, targets) in enumerate(tqdm(self.trainloader, desc=epoch_title)):
 			inputs = self.tokenize_batch(inputs)
 			inputs = torch.tensor(inputs, dtype=torch.float32, device=self.device)
-			# targets = torch.tensor(targets, dtype=torch.long)
 			targets = targets.float().to(self.device)
 
 			self.optimizer.zero_grad()
