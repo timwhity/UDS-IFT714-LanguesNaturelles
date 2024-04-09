@@ -5,11 +5,13 @@ from pathlib import Path
 from models.roberta import RobertaUrl
 from models.bert import BertUrl
 from models.decision_tree import DecisionTreeUrl
+from models.cnn import CNNUrl
 
 from trainers.trainer_metrics import TrainerMetrics
 from trainers.roberta_trainer import RobertaTrainer
 from trainers.bert_trainer import BertTrainer
 from trainers.decision_tree_trainer import DecisionTreeTrainer
+from trainers.cnn_trainer import CNNTrainer
 
 def load_model(model_name: str, experiment_name: str, device):
     experiment_dir = Path("models/trained") / experiment_name
@@ -37,6 +39,14 @@ def load_model(model_name: str, experiment_name: str, device):
         if to_load.exists():
             model.load_state_dict(to_load)
         return model, None, DecisionTreeTrainer
+    elif model_name == "cnn":
+        model = CNNUrl()
+        
+        to_load = experiment_dir / "cnn_url.pth"
+        if to_load.exists():
+            model.load_state_dict(torch.load(to_load))
+
+        return model.to(device), None, CNNTrainer
     else:
         raise ValueError(f"Invalid model name: {model_name}")
     
