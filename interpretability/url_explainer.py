@@ -26,8 +26,7 @@ class UrlExplainer(LimeTextExplainer):
         self.last_instances_explained = []
         
         for url in urls:
-            print(url)
-            exp = self.explain_instance("test.com", func)
+            exp = self.explain_instance(url, func)
             self.last_instances_explained.append(exp)
         
         return self.last_instances_explained

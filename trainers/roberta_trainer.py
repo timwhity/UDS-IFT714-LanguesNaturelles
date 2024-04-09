@@ -85,7 +85,7 @@ class RobertaTrainer(BaseTrainer):
             if (eval_each > 0) and (batch_index % eval_each == 0):
                 self.validate()
 
-            if accuracy > 0.97:
+            if accuracy > 0.995:
                 break
 
             if self.limit and (batch_index >= self.limit): # Break prematurely for debugging on CPU or poor GPU
