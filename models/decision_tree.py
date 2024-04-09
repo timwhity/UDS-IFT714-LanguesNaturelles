@@ -11,17 +11,21 @@ class DecisionTreeUrl():
             random_state=seed, criterion="gini", max_features="sqrt"
         )
 
-    def forward(self, inputs, probs=True):
+    def forward(self, inputs, probs=False):
         if probs:
-            return self.tree.predict_proba(inputs)[:, 1]
+            proba = self.tree.predict_proba(inputs)
+            return proba
         else:
             return self.tree.predict(inputs)
     
     def train(self, inputs, targets):
         self.tree = self.tree.fit(inputs, targets)
     
-    def __call__(self, inputs):
-        return self.forward(inputs)
+    def __call__(self, inputs, probs=False):
+        return self.forward(inputs, probs)
     
     def load_state_dict(self, model_path):
-        self.tree = joblib.load(model_path)
+        self.tree = joblib.load(model_path)[0]
+
+    def save_state_dict(self, model_path):
+        joblib.dump([self.tree], model_path)
