@@ -3,10 +3,12 @@ import transformers
 from pathlib import Path
 
 from models.roberta import RobertaUrl
+from models.bert import BertUrl
 from models.decision_tree import DecisionTreeUrl
 
 from trainers.trainer_metrics import TrainerMetrics
 from trainers.roberta_trainer import RobertaTrainer
+from trainers.bert_trainer import BertTrainer
 from trainers.decision_tree_trainer import DecisionTreeTrainer
 
 def load_model(model_name: str, experiment_name: str, device):
@@ -20,6 +22,14 @@ def load_model(model_name: str, experiment_name: str, device):
             model.load_state_dict(torch.load(to_load))
 
         return model.to(device), transformers.RobertaTokenizer.from_pretrained("roberta-base"), RobertaTrainer
+    if model_name == "bert":
+        model = BertUrl()
+
+        to_load = experiment_dir / "bert_url.pth"
+        if to_load.exists():
+            model.load_state_dict(torch.load(to_load))
+
+        return model.to(device), transformers.BertTokenizer.from_pretrained("bert-base-uncased"), BertTrainer
     elif model_name == "decision_tree":
         model = DecisionTreeUrl()
 

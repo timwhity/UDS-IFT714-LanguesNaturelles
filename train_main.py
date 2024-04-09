@@ -63,7 +63,7 @@ def main(args):
 if '__main__' == __name__:
     parser = argparse.ArgumentParser(description="Train a model on the URL dataset")
     parser = add_default_arguments(parser)
-    parser.add_argument("--model_name", type=str, default="roberta", help="The name of the model to use", nargs="?", choices=["roberta", "decision_tree"])
+    parser.add_argument("--model_name", type=str, default="roberta", help="The name of the model to use", nargs="?", choices=["roberta", "decision_tree", "bert"])
     parser.add_argument("--batch_size", type=int, default=16, help="The batch size for training")
     parser.add_argument("--num_epochs", type=int, default=1, help="The number of epochs to train for")
 

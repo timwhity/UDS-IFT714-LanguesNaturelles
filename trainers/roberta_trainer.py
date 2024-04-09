@@ -4,8 +4,11 @@ from .base_trainer import BaseTrainer
 
 class RobertaTrainer(BaseTrainer):
     def __init__(self, experiment, model, tokenizer, loss_fn, optimizer, scheduler, splits_directory, batch_size, device, limit = None, max_seq_length=2048) -> None:
-        super().__init__(experiment, "roberta", model, tokenizer, loss_fn, optimizer, scheduler, splits_directory, batch_size, device, limit = None)
+        super().__init__(experiment, self._get_model_name(), model, tokenizer, loss_fn, optimizer, scheduler, splits_directory, batch_size, device, limit = None)
         self.max_seq_length = max_seq_length
+
+    def _get_model_name(self):
+        return "roberta"
 
     def predict(self, texts):
 
