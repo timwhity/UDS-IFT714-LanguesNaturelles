@@ -48,9 +48,8 @@ class CNNTrainer(BaseTrainer):
 		self.model.eval()
 		batch_preds = []
 		for text_batch in tqdm(batch(texts, n=32), total=len(texts)//32 + 1):
-			inputs = self.tokenize_batch(inputs)
+			inputs = self.tokenize_batch(text_batch)
 			inputs = torch.tensor(inputs, dtype=torch.float32, device=self.device)
-			targets = targets.float().to(self.device)
 
 			with torch.no_grad():
 				outputs = self.model(inputs).squeeze(1)
