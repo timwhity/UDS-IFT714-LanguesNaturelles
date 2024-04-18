@@ -37,7 +37,7 @@ def main(args):
     device = ptu.get_device()
 
     # Load the model
-    model, tokenizer, trainer_cls = load_model(model_name, experiment_name, device)
+    model, tokenizer, trainer_cls = load_model(model_name, experiment_name, device, max_seq_length)
     loss_fn = torch.nn.BCELoss()
 
     trainer = trainer_cls(experiment_name,

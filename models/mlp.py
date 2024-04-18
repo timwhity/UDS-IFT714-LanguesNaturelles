@@ -6,18 +6,19 @@ class MLPUrl(nn.Module):
   
 		# Define the architecture of the MLP
         self.model = nn.Sequential(
-            nn.Linear(input_size, 512),
+            nn.Flatten(),
+            nn.Linear(input_size*70, 512),
             nn.ReLU(),
-            nn.Linear(512, 1024),
+            nn.Linear(512, 2048),
             nn.ReLU(),
-            nn.Linear(1024, 1024),
+            nn.Linear(2048, 4096),
             nn.ReLU(),
-            nn.Linear(1024, 1)
+            nn.Linear(4096, 1)
         )
     
         self.sigmoid = nn.Sigmoid()
   
     def forward(self, x):
         logits = self.model(x)
-        probs = self.sigmoid(logits)
+        probs = self.sigmoid(logits).squeeze(1)
         return probs

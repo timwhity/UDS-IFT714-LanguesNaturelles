@@ -11,16 +11,9 @@ class RobertaTrainer(BaseTrainer):
         return "roberta"
 
     def predict(self, texts):
-
-        # For LIME predictions, we need to train by batches
-        def batch(iteratable, n=1):
-            l = len(iteratable)
-            for ndx in range(0, l, n):
-                yield iteratable[ndx:min(ndx + n, l)]
-
         self.model.eval()
         batch_preds = []
-        for text_batch in tqdm(batch(texts, n=32), total=len(texts)//32 + 1):
+        for text_batch in tqdm(self.batch(texts, n=32), total=len(texts)//32 + 1):
             tokenized = self.tokenizer(text_batch,
                                     max_length=self.max_seq_length,
                                     padding="max_length",

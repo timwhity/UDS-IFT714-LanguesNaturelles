@@ -24,7 +24,7 @@ def main(args):
     device = ptu.get_device()
 
     # Load the model
-    model, tokenizer, trainer_cls = load_model(model_name, experiment_name, device)
+    model, tokenizer, trainer_cls = load_model(model_name, experiment_name, device, max_seq_length)
     
     if trainer_cls is DecisionTreeTrainer:
         # DecisionTreeTrainer does not require a tokenizer
