@@ -31,7 +31,7 @@
             "program": "${workspaceFolder}/train_main.py",
             "console": "integratedTerminal",
             "args": [
-                "decision_tree_d1", "data/combined_dataset_12", "--model_name", "decision_tree"
+                "test_mlp", "data/combined_dataset_12", "--model_name", "mlp"
             ]
         }
     ]

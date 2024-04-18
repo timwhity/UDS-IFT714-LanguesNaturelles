@@ -1,7 +1,7 @@
 import torch.nn as nn
 
 class MLPUrl(nn.Module):
-    def __init__(self, input_size=256) -> None:
+    def __init__(self, input_size=512) -> None:
         super().__init__()
   
 		# Define the architecture of the MLP
