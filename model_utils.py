@@ -6,12 +6,14 @@ from models.roberta import RobertaUrl
 from models.bert import BertUrl
 from models.decision_tree import DecisionTreeUrl
 from models.cnn import CNNUrl
+from models.mlp import MLPUrl
 
 from trainers.trainer_metrics import TrainerMetrics
 from trainers.roberta_trainer import RobertaTrainer
 from trainers.bert_trainer import BertTrainer
 from trainers.decision_tree_trainer import DecisionTreeTrainer
 from trainers.cnn_trainer import CNNTrainer
+from trainers.mlp_trainer import MLPTrainer
 
 def load_model(model_name: str, experiment_name: str, device):
     experiment_dir = Path("models/trained") / experiment_name
@@ -47,6 +49,14 @@ def load_model(model_name: str, experiment_name: str, device):
             model.load_state_dict(torch.load(to_load))
 
         return model.to(device), None, CNNTrainer
+    elif model_name == "mlp":
+        model = MLPUrl()
+        
+        to_load = experiment_dir / "mlp_url.pth"
+        if to_load.exists():
+            model.load_state_dict(torch.load(to_load))
+
+        return model.to(device), None, MLPTrainer
     else:
         raise ValueError(f"Invalid model name: {model_name}")
     
