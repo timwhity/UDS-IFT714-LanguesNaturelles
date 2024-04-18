@@ -51,6 +51,7 @@ def main(args):
 
     for epoch in range(num_epochs):
         train_metrics = trainer.train()
+        valid_metrics = trainer.validate()
 
     trainer.save_model()
     trainer.save_experiment_metrics() # Save preleminary metrics

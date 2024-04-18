@@ -87,8 +87,6 @@ class RobertaTrainer(BaseTrainer):
             if self.limit and (batch_index >= self.limit): # Break prematurely for debugging on CPU or poor GPU
                 break
 
-        self.test()
-
         return self.metrics.get_metrics("train")
     
     def validate(self, test: bool = False):
