@@ -26,8 +26,4 @@ class UrlDataset(Dataset):
             url = self.transform(url)
 
         return url, result
-    
-    def get_all_data(self):
-        # Return the dataset as a tuple of numpy arrays
-        return self.df.iloc[:, self.result_column].values, self.df.iloc[:, self.result_column].values
         

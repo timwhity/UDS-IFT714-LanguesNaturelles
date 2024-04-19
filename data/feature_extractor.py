@@ -154,26 +154,3 @@ class FeatureExtractor:
 
     def is_domain_in_ip_format(self, domain: str) -> bool:
         return domain.replace('.', '').isnumeric()
-    
-
-
-def main():
-    dataset = "combined_dataset_12/all.csv"
-    import pandas as pd
-    df = pd.read_csv(dataset)
-    urls = df['url'].values
-
-    extractor = FeatureExtractor()
-    features = extractor.extract_batch(urls)
-    # features = extractor.extract("www.google.com/abc/def/test.py?query=123")
-    # print(features)
-    print(features.shape)
-    # print(features)
-    
-    # for url, feature in zip(urls, features):
-    #     print(url)
-    #     print(feature)
-    #     print()
-
-if __name__ == '__main__':
-    main()

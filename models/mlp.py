@@ -4,7 +4,6 @@ class MLPUrl(nn.Module):
     def __init__(self, input_size=512) -> None:
         super().__init__()
   
-		# Define the architecture of the MLP
         self.model = nn.Sequential(
             nn.Flatten(),
             nn.Linear(input_size*70, 512),

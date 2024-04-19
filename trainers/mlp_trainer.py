@@ -1,10 +1,5 @@
 import torch
-import torch.nn as nn
-import torch.optim as optim
 from .base_trainer import BaseTrainer
-import numpy as np
-from typing import List
-from torchinfo import summary
 from tqdm import tqdm
 
 class MLPTrainer(BaseTrainer):

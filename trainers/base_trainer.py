@@ -47,7 +47,6 @@ class BaseTrainer(ABC):
         self.metrics = TrainerMetrics()
 
     def save_model(self):
-        # Save the model
         torch.save(self.model.state_dict(), self.experiment_dir / "{}_url.pth".format(self.model_name))
 
     def save_experiment_metrics(self, prefix=None):

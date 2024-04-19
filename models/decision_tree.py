@@ -1,7 +1,9 @@
-import torch.nn as nn
-from torch.nn.modules.module import T
 import joblib
 from sklearn.tree import DecisionTreeClassifier
+
+# The rest of the project was built around using PyTorch models.
+# Since the DecisionTreeClassifier is a scikit-learn model, we
+# wrapped it in a class that behaves like a PyTorch model.
 
 class DecisionTreeUrl():
 
