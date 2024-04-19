@@ -1,10 +1,6 @@
 import argparse
 import pandas as pd
-# import matplotlib.pyplot as plt
-# import seaborn as sns
 from pathlib import Path
-
-# sns.set_style("darkgrid")
 
 def get_dataset_stats(dataset):
     len_moy = 0
@@ -29,20 +25,6 @@ def get_dataset_stats(dataset):
         "Longueur maximum": len_max,
         "Longueur mininimum": len_min
     }
-
-# def plot_dataset_stats(stats, save_dir=None):
-    
-#     # Plot a pie chart of the number of benign and malicious samples
-#     fig, ax = plt.subplots()
-#     ax.pie([stats["num_benign"], stats["num_malicious"]], labels=["Benign ({})".format(stats["num_benign"]), "Malicious ({})".format(stats["num_malicious"])], autopct="%1.1f%%")
-#     ax.set_title(f"Dataset Stats\nNum Samples: {stats['num_samples']}")
-
-
-#     if save_dir is not None:
-#         save_dir = Path(save_dir) / "stats.png"
-#         plt.savefig(save_dir)
-#     else:
-#         plt.show()
 
 def save_dataset_stats(stats, save_dir, latex=False):
     text = ""
@@ -74,7 +56,6 @@ def main(args):
     # Load the dataset
     dataset = pd.read_csv(args.dataset)
     stats = get_dataset_stats(dataset)
-    # plot_dataset_stats(stats, args.save_dir)
     save_dataset_stats(stats, args.save_dir, args.latex)
 
 

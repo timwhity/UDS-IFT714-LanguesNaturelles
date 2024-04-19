@@ -103,7 +103,10 @@ python test_lime.py dt data/combined_dataset_12/
 
 Pour un usage plus avancé:
 ```bash
-usage: test_lime.py [-h] [--num_workers NUM_WORKERS] [--limit LIMIT] experiment_name dataset_directory
+usage: test_lime.py [-h]
+                    [--num_workers NUM_WORKERS]
+                    [--limit LIMIT]
+                    experiment_name dataset_directory
 
 positional arguments:
   experiment_name       The name of the experiment
@@ -118,7 +121,35 @@ options:
 ```
 
 ### Créer ou fusionner un dataset
+Si vous souhaitez créer votre propre dataset ou vous souhaitez refaire un split d'un des datasets existants, alors vous aurez besoin du script `split_data.py` qui vous permet de split ou de combiner des ensembles de données CSV. L'argument positionnel "dataset" peut prendre plusieurs chemins vers différents datasets. Si plusieurs datasets sont listés, alors le script fera automatiquement la combinaison entre les datasets, retirera les doublons et génèrera des statistiques par rapport à celui-ci.
 
+Une caractéristique implémentée, mais non-incluse dans les résultats est la possibilité de pouvoir balancer les ensembles de données. Comme ceux-ci favorisent généralement un plus grand nombre d'URLs bénignes, on offre la possibilité de sous-échantillonner la classe la plus fréquente de sorte à ce que les deux classes soient représentées équitablement en spécifiant l'argument `--balance`.
+
+Voici un exemple d'exécution pour séparer un ensemble de données:
+```bash
+python split_data.py data/test/urldata.csv --save_dir=data/test/
+```
+
+Pour un usage plus avancé:
+```bash
+usage: split_data.py [-h]
+                     [--balance]
+                     [--test_ratio TEST_RATIO]
+                     [--seed SEED]
+                     --save_dir SAVE_DIR
+                     dataset [dataset ...]
+
+positional arguments:
+  dataset               Path to the single dataset CSV.
+
+options:
+  -h, --help            show this help message and exit
+  --balance             Balance the dataset.
+  --save_dir SAVE_DIR   Directory to save the split datasets.
+  --test_ratio TEST_RATIO
+                        Validation ratio from the training set.
+  --seed SEED
+```
 
 ## Structure du projet
 

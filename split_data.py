@@ -1,8 +1,8 @@
 import argparse
 import pandas as pd
 from pathlib import Path
-from stats_dataset import get_dataset_stats, plot_dataset_stats
-from data_utils import balance_data
+from data.stats_dataset import get_dataset_stats, save_dataset_stats
+from data.data_utils import balance_data
 
 def preprocess_data(data: pd.DataFrame) -> pd.DataFrame:
     print("Preprocessing data...", end="")
@@ -74,7 +74,7 @@ def main(args):
 
     # Plot the dataset stats
     stats = get_dataset_stats(df)
-    plot_dataset_stats(stats, save_dir)
+    save_dataset_stats(stats, save_dir=save_dir, latex=False)
 
 
 # This script should only be used to split the data into training/validtion/testing
