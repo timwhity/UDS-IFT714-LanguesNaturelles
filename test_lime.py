@@ -12,7 +12,7 @@ from data.data_utils import load_url_dataset
 from trainers.trainer_metrics import TrainerMetrics
 from utils.utils import add_default_arguments
 from interpretability.url_explainer import UrlExplainer
-from model_utils import load_model, load_config_data
+from utils.model_utils import load_model, load_config_data
 
 URLS_TO_EXPLAIN = [
     # Benign

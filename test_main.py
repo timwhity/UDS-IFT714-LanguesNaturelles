@@ -13,7 +13,7 @@ import utils.torch_utils as ptu
 from data.data_utils import load_url_dataset
 from trainers.trainer_metrics import TrainerMetrics
 from utils.utils import add_default_arguments
-from model_utils import load_config_data, load_model
+from utils.model_utils import load_config_data, load_model
 from sklearn import tree
 
 def main(args):
