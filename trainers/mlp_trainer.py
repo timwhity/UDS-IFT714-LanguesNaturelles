@@ -13,7 +13,7 @@ class MLPTrainer(BaseTrainer):
         batch_preds = []
         for text_batch in tqdm(self.batch(texts, n=32), total=len(texts)//32 + 1):
             data = self.tokenizer.tokenize(text_batch)
-            data, target = torch.tensor(data, dtype=torch.float32, device=self.device), torch.tensor(target, dtype=torch.float32, device=self.device)
+            data = torch.tensor(data, dtype=torch.float32, device=self.device)
             
             with torch.no_grad():
                 prob_malicious = self.model(data)
