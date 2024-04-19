@@ -162,3 +162,4 @@ cython_debug/
 data/splits
 models/trained/*
 !models/trained/.gitkeep
+.vscode*
