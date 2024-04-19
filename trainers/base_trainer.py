@@ -63,6 +63,14 @@ class BaseTrainer(ABC):
 
         print(f"Experiment (model, metrics & config) saved to {self.experiment_dir}")
 
+    @staticmethod
+    def batch(iteratable, n=1):
+        # For LIME predictions, we need to predict by batches
+        # in some cases to avoid memory issues.
+        l = len(iteratable)
+        for ndx in range(0, l, n):
+            yield iteratable[ndx:min(ndx + n, l)]
+
     @abstractmethod
     def train(self):
         raise NotImplementedError

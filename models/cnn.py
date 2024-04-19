@@ -21,22 +21,22 @@ class CNNUrl(nn.Module):
 		# 11) Linear + sigmoid : (64) -> (1)
   
 		self.nn1 = nn.Sequential(
-			nn.Conv1d(70, 30, kernel_size=3, padding=1),
+			nn.Conv1d(70, 128, kernel_size=3, padding=1),
 			nn.ReLU(),
 			nn.MaxPool1d(kernel_size=2),
-			nn.Conv1d(30, 40, kernel_size=3, padding=1),
+			nn.Conv1d(128, 256, kernel_size=3, padding=1),
 			nn.ReLU(),
 			nn.MaxPool1d(kernel_size=2),
-			nn.Conv1d(40, 50, kernel_size=3, padding=1),
+			nn.Conv1d(256, 512, kernel_size=3, padding=1),
 			nn.ReLU(),
 			nn.MaxPool1d(kernel_size=2),
-			nn.Conv1d(50, 60, kernel_size=3, padding=1),
+			nn.Conv1d(512, 1024, kernel_size=3, padding=1),
 			nn.ReLU(),
 			nn.MaxPool1d(kernel_size=2),
 			nn.Flatten(),
-			nn.Linear(60*16, 64),
+			nn.Linear(1024*16, 128),
 			nn.ReLU(),
-			nn.Linear(64, 1),
+			nn.Linear(128, 1),
 			nn.Sigmoid()
 		)
   

@@ -24,7 +24,7 @@ def main(args):
     device = ptu.get_device()
 
     # Load the model
-    model, tokenizer, trainer_cls = load_model(model_name, experiment_name, device)
+    model, tokenizer, trainer_cls = load_model(model_name, experiment_name, device, max_seq_length)
     
     if trainer_cls is DecisionTreeTrainer:
         # DecisionTreeTrainer does not require a tokenizer
@@ -51,6 +51,7 @@ def main(args):
 
     for epoch in range(num_epochs):
         train_metrics = trainer.train()
+        valid_metrics = trainer.validate()
 
     trainer.save_model()
     trainer.save_experiment_metrics() # Save preleminary metrics
@@ -63,7 +64,7 @@ def main(args):
 if '__main__' == __name__:
     parser = argparse.ArgumentParser(description="Train a model on the URL dataset")
     parser = add_default_arguments(parser)
-    parser.add_argument("--model_name", type=str, default="roberta", help="The name of the model to use", nargs="?", choices=["roberta", "decision_tree", "cnn", "bert"])
+    parser.add_argument("--model_name", type=str, default="roberta", help="The name of the model to use", nargs="?", choices=["roberta", "decision_tree", "cnn", "bert", "mlp"])
     parser.add_argument("--batch_size", type=int, default=16, help="The batch size for training")
     parser.add_argument("--num_epochs", type=int, default=1, help="The number of epochs to train for")
 

@@ -6,14 +6,18 @@ from models.roberta import RobertaUrl
 from models.bert import BertUrl
 from models.decision_tree import DecisionTreeUrl
 from models.cnn import CNNUrl
+from models.mlp import MLPUrl
 
 from trainers.trainer_metrics import TrainerMetrics
 from trainers.roberta_trainer import RobertaTrainer
 from trainers.bert_trainer import BertTrainer
 from trainers.decision_tree_trainer import DecisionTreeTrainer
 from trainers.cnn_trainer import CNNTrainer
+from trainers.mlp_trainer import MLPTrainer
 
-def load_model(model_name: str, experiment_name: str, device):
+from utils.basic_tokenizer import BasicTokenizer
+
+def load_model(model_name: str, experiment_name: str, device, max_seq_length: int):
     experiment_dir = Path("models/trained") / experiment_name
     # Return the model, tokenizer, and trainer class for the given model name
     if model_name == "roberta":
@@ -46,7 +50,15 @@ def load_model(model_name: str, experiment_name: str, device):
         if to_load.exists():
             model.load_state_dict(torch.load(to_load))
 
-        return model.to(device), None, CNNTrainer
+        return model.to(device), BasicTokenizer(max_seq_length), CNNTrainer
+    elif model_name == "mlp":
+        model = MLPUrl()
+        
+        to_load = experiment_dir / "mlp_url.pth"
+        if to_load.exists():
+            model.load_state_dict(torch.load(to_load))
+
+        return model.to(device), BasicTokenizer(max_seq_length), MLPTrainer
     else:
         raise ValueError(f"Invalid model name: {model_name}")
     
